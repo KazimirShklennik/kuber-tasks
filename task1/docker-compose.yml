@@ -1,0 +1,72 @@
+version: '3.9'
+services:
+  user-service-db:
+    container_name:  user-service-db
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=userServiceUser
+      - POSTGRES_PASSWORD=userServiceUserPass
+      - POSTGRES_DB=user-db
+    ports:
+      - '5432:5432'
+    volumes:
+      - user-service-vol:/var/lib/postgresql/data
+
+  user-post-service-db:
+    container_name: user-post-service-db
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=userPostServiceUser
+      - POSTGRES_PASSWORD=userPostServiceUserPass
+      - POSTGRES_DB=user-post-db
+    ports:
+      - '5433:5432'
+    volumes:
+      - user-post-service-vol:/var/lib/postgresql/data
+
+  user-service:
+    container_name: user-service
+    image: user-service
+    build:
+      context: ./user-service/
+      dockerfile: ./Dockerfile
+    ports:
+      - "8081:8080"
+    links:
+      - user-service-db
+    depends_on:
+      - user-service-db
+    environment:
+      - DATABASE_URL=jdbc:postgresql://user-service-db:5432/user-db
+      - SPRING_DATASOURCE_USERNAME=userServiceUser
+      - SPRING_DATASOURCE_PASSWORD=userServiceUserPass
+    restart: always
+
+  user-post-service:
+    container_name: user-post-service
+    image: user-post-service
+    build:
+      context: ./post-service/
+      dockerfile: ./Dockerfile
+    ports:
+      - "8082:8080"
+    links:
+      - user-service
+      - user-post-service-db
+    depends_on:
+      - user-service
+      - user-post-service-db
+    environment:
+      - DATABASE_URL=jdbc:postgresql://user-post-service-db:5432/user-post-db
+      - SPRING_DATASOURCE_USERNAME=userPostServiceUser
+      - SPRING_DATASOURCE_PASSWORD=userPostServiceUserPass
+      - USER_SERVER_HOST=http://user-service:8080
+    restart: always
+ 
+volumes:
+  user-service-vol:
+    driver: local
+  user-post-service-vol:
+    driver: local
