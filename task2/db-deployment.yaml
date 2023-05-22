@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: user-service-namespace
+  name: service-user-service-db
+  labels:
+    app: user-service-db
+spec:
+  type: ClusterIP
+  ports:
+    - name: user-service-db
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: user-service-db
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: user-service-namespace
+  name: user-service-db
+spec:
+  selector:
+    matchLabels:
+      app: user-service-db
+  serviceName: user-service-db
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: user-service-db
+    spec:
+      containers:
+        - image: postgres:14.1-alpine
+          name: user-service-db
+          env:
+            - name: POSTGRES_DB
+              value: user-db
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: password
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: username
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          ports:
+            - containerPort: 5432
+              name: user-service-db
+          volumeMounts:
+            - name: user-service-db-pv-claim
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready --host $POD_IP"
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready --host $POD_IP"
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 1
+  volumeClaimTemplates:
+    - metadata:
+        name: user-service-db-pv-claim
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi

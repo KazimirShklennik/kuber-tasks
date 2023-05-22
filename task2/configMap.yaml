@@ -1,0 +1,9 @@
+apiVersion : v1
+kind : ConfigMap
+metadata:
+  namespace: user-service-namespace
+  name : db-config
+data:
+  host : jdbc:postgresql://service-user-service-db:5432/user-db
+  dbName: user-db
+  username: userServiceUser
