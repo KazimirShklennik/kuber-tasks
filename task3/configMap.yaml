@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: posts-namespace
+  name: db-config
+data:
+  userDbHost: jdbc:postgresql://user-db-svc:5432/user-db
+  userDbName: user-db
+  userDbUserName: userServiceUser
+  userIitDbFile: file:/usr/share/userservice/schema.sql
+  topicDbUserName: userPostServiceUser
+  topicDbHost: jdbc:postgresql://topic-db-svc:5432/user-post-db
+  topicDbName: user-post-db
+  topicUserServiceHost: http://user-app-svc:8080

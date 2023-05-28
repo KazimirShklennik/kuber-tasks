@@ -25,6 +25,7 @@ public class UserPost {
 
     private Integer authorId;
     private String text;
+    private String topic;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private Date postedAt;

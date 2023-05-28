@@ -24,14 +24,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User update(User user) {
-        Optional<User> userOptional = userRepository.findById(user.getUserId());
+        Optional<User> userOptional = userRepository.findById(user.getId());
 
         if (userOptional.isEmpty()) {
             return userRepository.save(user);
         }
 
         User userFromDb = userOptional.get();
-        userFromDb.setUserName(user.getUserName());
+        userFromDb.setName(user.getName());
         userFromDb.setAmountOfPosts(user.getAmountOfPosts());
 
         return userRepository.save(userFromDb);

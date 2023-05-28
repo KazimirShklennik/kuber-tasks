@@ -13,10 +13,10 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer userId;
+    private Integer id;
 
     @Column(name = "name")
-    private String userName;
+    private String name;
 
     @Column(name = "posts")
     private int amountOfPosts;

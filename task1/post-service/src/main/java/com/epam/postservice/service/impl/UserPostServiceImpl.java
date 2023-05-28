@@ -52,6 +52,7 @@ public class UserPostServiceImpl implements UserPostService {
 
         UserPost userPostFromDb = userOptional.get();
         userPostFromDb.setText(userPost.getText());
+        userPostFromDb.setTopic(userPost.getTopic());
         userPostFromDb.setAuthorId(userPost.getAuthorId());
 
         return userPostRepository.save(userPostFromDb);

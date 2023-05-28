@@ -1,0 +1,84 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: posts-namespace
+  name: user-app-svc
+spec:
+  selector:
+    app: user-app
+  ports:
+    - protocol: "TCP"
+      port: 8080
+      targetPort: 8080
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: posts-namespace
+  name: user-app
+spec:
+  selector:
+    matchLabels:
+      app: user-app
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: user-app
+    spec:
+      containers:
+        - name: user-app
+          image: kazimirshklennikdev/user-service:1.5-release
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: userDbHost
+
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: userDbUserName
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: userDbPassword
+
+            - name: DATABASE_INIT_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: userIitDbFile
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            timeoutSeconds: 1
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+              scheme: HTTP
+              httpHeaders:
+                - name: X-Client-Identity
+                  value: Kubernetes-Startup-Probe

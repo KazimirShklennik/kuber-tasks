@@ -24,6 +24,34 @@ spring:
 server:
   port: 8080
 
+management:
+  monitoring:
+    enabled: ${APPLICATION_MONITORING:true}
+  health:
+    mail:
+      enabled: false
+  endpoint:
+    health:
+      enabled: true
+      probes:
+        enabled: true
+    env:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: metrics,info,health,env,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+
 services:
   host:
     user: ${USER_SERVER_HOST:http://localhost:8080}

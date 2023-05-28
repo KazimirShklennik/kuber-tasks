@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class User {
 
-    private Integer userId;
-    private String userName;
+    private Integer id;
+    private String name;
     private int amountOfPosts;
 }

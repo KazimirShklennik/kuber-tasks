@@ -7,9 +7,7 @@ services:
     environment:
       - POSTGRES_USER=userServiceUser
       - POSTGRES_PASSWORD=userServiceUserPass
-      - POSTGRES_DB=user-db
-    ports:
-      - '5432:5432'
+      - POSTGRES_DB=user-db   
     volumes:
       - user-service-vol:/var/lib/postgresql/data
 
@@ -20,9 +18,7 @@ services:
     environment:
       - POSTGRES_USER=userPostServiceUser
       - POSTGRES_PASSWORD=userPostServiceUserPass
-      - POSTGRES_DB=user-post-db
-    ports:
-      - '5433:5432'
+      - POSTGRES_DB=user-post-db 
     volumes:
       - user-post-service-vol:/var/lib/postgresql/data
 
@@ -32,8 +28,6 @@ services:
     build:
       context: ./user-service/
       dockerfile: ./Dockerfile
-    ports:
-      - "8081:8080"
     links:
       - user-service-db
     depends_on:
@@ -49,9 +43,7 @@ services:
     image: user-post-service
     build:
       context: ./post-service/
-      dockerfile: ./Dockerfile
-    ports:
-      - "8082:8080"
+      dockerfile: ./Dockerfile  
     links:
       - user-service
       - user-post-service-db

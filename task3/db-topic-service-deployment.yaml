@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: posts-namespace
+  name: topic-db-svc
+  labels:
+    app: topic-db
+spec:
+  type: ClusterIP
+  ports:
+    - name: topic-db
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: topic-db
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: posts-namespace
+  name: topic-db
+spec:
+  selector:
+    matchLabels:
+      app: topic-db
+  serviceName: topic-db
+  replicas: 1  
+  template:
+    metadata:
+      labels:
+        app: topic-db
+    spec:
+      containers:
+        - image: postgres:14.1-alpine
+          name: topic-db
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: topicDbName
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: topicDbPassword
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: topicDbUserName            
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+
+          ports:
+            - containerPort: 5432
+              name: topic-db
+          volumeMounts:
+            - name: topic-db-pv-claim
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready --host $POD_IP"
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready --host $POD_IP"
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 1
+  volumeClaimTemplates:
+    - metadata:
+        name: topic-db-pv-claim
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi

@@ -62,7 +62,7 @@ public class UserServiceImpl implements UserService {
         ResponseEntity<String> stringResponseEntity = restService.executePost(url, request, new HashMap<>());
 
         if (stringResponseEntity == null) {
-            log.warn("Can't send song metadata. Resource key: {}", user.getUserId());
+            log.warn("Can't send song metadata. Resource key: {}", user.getId());
             return null;
         }
 

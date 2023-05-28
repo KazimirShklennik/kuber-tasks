@@ -13,13 +13,43 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: none
 
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost/user-service-db}
-    username: ${SPRING_DATASOURCE_USERNAME:admin}
-    password: ${SPRING_DATASOURCE_PASSWORD:admin}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/user-db}
+    username: ${SPRING_DATASOURCE_USERNAME:userServiceUser}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
     driver-class-name: org.postgresql.Driver
+    initialization-mode: always
+    schema: ${DATABASE_INIT_DB:classpath:schema.sql}
+
+management:
+  monitoring:
+    enabled: ${APPLICATION_MONITORING:true}
+  health:
+    mail:
+      enabled: false
+  endpoint:
+    health:
+      enabled: true
+      probes:
+        enabled: true
+    env:
+      enabled: true
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: metrics,info,health,env,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
 
 server:
   port: 8080
