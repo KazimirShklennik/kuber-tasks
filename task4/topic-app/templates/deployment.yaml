@@ -42,7 +42,7 @@ spec:
             - name: SPRING_DATASOURCE_USERNAME
               value: {{ .Values.settings.app.database.topicDbUserName | quote }}
             - name: USER_SERVER_HOST
-              value: {{ .Release.Name }}-user-app
+              value: todo
           ports:
             - name: http
               containerPort: 80

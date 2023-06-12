@@ -4,11 +4,7 @@ metadata:
   namespace: posts-namespace
   name: db-config
 data:
-  userDbHost: jdbc:postgresql://user-db-svc:5432/user-db
   userDbName: user-db
   userDbUserName: userServiceUser
-  userInitDbFile: file:/usr/share/userservice/schema.sql
   topicDbUserName: topicServiceUser
-  topicDbHost: jdbc:postgresql://topic-db-svc:5432/topic-db
   topicDbName: user-post-db
-  topicUserServiceHost: http://user-app-svc:8080

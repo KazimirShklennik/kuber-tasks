@@ -51,6 +51,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Generate user-backend url
+*/}}
+{{- define "user-backend.url" -}}
+{{- $fqdn := printf "%s-user-backend" .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- printf "http://%s:8080/perf" $fqdn -}}
+{{- end -}}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "topic-app.serviceAccountName" -}}
