@@ -25,7 +25,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "user-app.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -49,22 +48,29 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
+          {{- if .Values.livenessProbe.enabled }}
           livenessProbe:
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 30
-            timeoutSeconds: 1
-            readinessProbe:
-              httpGet:
-                path: /actuator/health
-                port: 8080
-              timeoutSeconds: 1
-            startupProbe:
-              httpGet:
-                path: /actuator/health
-                port: 8080
-                scheme: HTTP
-                httpHeaders:
-                  - name: X-Client-Identity
-                    value: Kubernetes-Startup-Probe
+          {{- end }}
+          {{- if .Values.readinessProbe.enabled }}
+          readinessProbe:
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            httpGet:
+              path: /actuator/health
+              port: 8080
+          {{- end }}
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+              scheme: HTTP
+              httpHeaders:
+                - name: X-Client-Identity
+                  value: Kubernetes-Startup-Probe
