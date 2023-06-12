@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: posts-namespace
+  name: user-db-svc
+  labels:
+    app: user-db
+spec:
+  type: ClusterIP
+  ports:
+    - name: user-db
+      port: 5432
+      targetPort: 5432
+  selector:
+    app: user-db
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  namespace: posts-namespace
+  name: user-db
+spec:
+  selector:
+    matchLabels:
+      app: user-db
+  serviceName: user-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: user-db
+    spec:
+      containers:
+        - image: postgres:14.1-alpine
+          name: user-db
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: userDbName
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secrets
+                  key: userDbPassword
+            - name: POSTGRES_USER
+              valueFrom:
+                configMapKeyRef:
+                  name: db-config
+                  key: userDbUserName
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          ports:
+            - containerPort: 5432
+              name: user-db
+          volumeMounts:
+            - name: user-db-pv-claim
+              mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready --host $POD_IP"
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - "sh"
+                - "-c"
+                - "pg_isready --host $POD_IP"
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 1
+  volumeClaimTemplates:
+    - metadata:
+        name: user-db-pv-claim
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi

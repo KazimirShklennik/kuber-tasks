@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: posts-namespace
+  name: {{ include "user-app.fullname" . }}
+  labels:
+    {{- include "user-app.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "user-app.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "user-app.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "user-app.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DATABASE_URL
+              value: {{ .Values.settings.app.database.userDbHost | quote }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "user-app.fullname" . }}-passwords
+                  key: userDbPassword
+            - name: DATABASE_INIT_DB
+              value: {{ .Values.settings.app.database.userInitDbFile | quote }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ .Values.settings.app.database.userDbUserName | quote }}
+
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+            readinessProbe:
+              httpGet:
+                path: /actuator/health
+                port: 8080
+              timeoutSeconds: 1
+            startupProbe:
+              httpGet:
+                path: /actuator/health
+                port: 8080
+                scheme: HTTP
+                httpHeaders:
+                  - name: X-Client-Identity
+                    value: Kubernetes-Startup-Probe
