@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: posts-namespace
-  name: {{ include "user-app.fullname" . }}
+  namespace: {{ .Values.namespace.name }}
+  name: {{ include "topic-app.fullname" . }}
   labels:
-    {{- include "user-app.labels" . | nindent 4 }}
+    {{- include "topic-app.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "user-app.selectorLabels" . | nindent 6 }}
+      {{- include "topic-app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -19,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "user-app.selectorLabels" . | nindent 8 }}
+        {{- include "topic-app.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -33,16 +33,20 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: DATABASE_URL
-              value: {{ .Values.settings.app.database.userDbHost | quote }}
+              value: {{ .Values.settings.app.topicApp.database.topicDbHost | quote }}
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "user-app.fullname" . }}-passwords
-                  key: userDbPassword
-            - name: DATABASE_INIT_DB
-              value: {{ .Values.settings.app.database.userInitDbFile | quote }}
+                  name: {{ include "topic-app.fullname" . }}-passwords
+                  key: topicDbPassword
             - name: SPRING_DATASOURCE_USERNAME
-              value: {{ .Values.settings.app.database.userDbUserName | quote }}
+              value: {{ .Values.settings.app.topicApp.database.topicDbUserName | quote }}
+            - name: USER_SERVER_HOST
+              value: {{ .Values.settings.app.topicApp.topicUserServiceHost | quote }}
+            - name: APP_VERSION
+              value: {{ include "topic-app.app.version" . }}
+            - name: CURRENT_DATE
+              value: {{ include "topic-app.currentDate" . }}
 
           ports:
             - name: http

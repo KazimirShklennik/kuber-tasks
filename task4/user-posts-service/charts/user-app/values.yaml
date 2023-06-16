@@ -2,6 +2,9 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+namespace:
+  name: posts-namespace
+
 replicaCount: 1
 
 image:
@@ -46,7 +49,8 @@ autoscaling:
 settings:
   javaOpts: -Xms500m -Xmx500m
   app:
-    database:
-      userDbHost: jdbc:postgresql://user-db-svc:5432/user-db
-      userDbUserName: userServiceUser
-      userInitDbFile: file:/usr/share/userservice/schema.sql
+    userApp:
+      database:
+        userDbHost: jdbc:postgresql://user-db-svc:5432/user-db
+        userDbUserName: userServiceUser
+        userInitDbFile: file:/usr/share/userservice/schema.sql

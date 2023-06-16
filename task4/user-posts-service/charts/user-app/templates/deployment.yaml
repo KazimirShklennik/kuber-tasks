@@ -1,17 +1,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: posts-namespace
-  name: {{ include "topic-app.fullname" . }}
+  namespace: {{ .Values.namespace.name }}
+  name: {{ include "user-app.fullname" . }}
   labels:
-    {{- include "topic-app.labels" . | nindent 4 }}
+    {{- include "user-app.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "topic-app.selectorLabels" . | nindent 6 }}
+      {{- include "user-app.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -19,7 +19,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "topic-app.selectorLabels" . | nindent 8 }}
+        {{- include "user-app.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -33,16 +33,17 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - name: DATABASE_URL
-              value: {{ .Values.settings.app.database.topicDbHost | quote }}
+              value: {{ .Values.settings.app.userApp.database.userDbHost | quote }}
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "topic-app.fullname" . }}-passwords
-                  key: topicDbPassword
+                  name: {{ include "user-app.fullname" . }}-passwords
+                  key: userDbPassword
+            - name: DATABASE_INIT_DB
+              value: {{ .Values.settings.app.userApp.database.userInitDbFile | quote }}
             - name: SPRING_DATASOURCE_USERNAME
-              value: {{ .Values.settings.app.database.topicDbUserName | quote }}
-            - name: USER_SERVER_HOST
-              value: todo
+              value: {{ .Values.settings.app.userApp.database.userDbUserName | quote }}
+
           ports:
             - name: http
               containerPort: 80
