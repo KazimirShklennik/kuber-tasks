@@ -2,13 +2,10 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-global:
+topic-app:
+  replicaCount: 1
   namespace:
     name: posts-namespace
-
-topic-app:
-  namespace:
-    name: ${global.namespace.name}
   app:
     javaOpts: -Xms500m -Xmx500m
     database:
@@ -16,8 +13,9 @@ topic-app:
       topicDbUserName: topicServiceUser
 
 user-app:
+  replicaCount: 1
   namespace:
-    name: ${global.namespace.name}
+    name: posts-namespace
   app:
     javaOpts: -Xms500m -Xmx500m
     database:
