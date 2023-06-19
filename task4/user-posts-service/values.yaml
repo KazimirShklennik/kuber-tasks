@@ -2,18 +2,25 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-namespace:
-  name: posts-namespace2
+global:
+  namespace:
+    name: posts-namespace
 
-settings:
-  javaOpts: -Xms500m -Xmx500m
+topic-app:
+  namespace:
+    name: ${global.namespace.name}
   app:
-    userApp:
-      database:
-        userDbHost: jdbc:postgresql://user-db-svc:5432/user-db
-        userDbUserName: userServiceUser
-        userInitDbFile: file:/usr/share/userservice/schema.sql
-    topicApp:
-      database:
-        topicDbHost: jdbc:postgresql://topic-db-svc:5432/user-post-db
-        topicDbUserName: topicServiceUser
+    javaOpts: -Xms500m -Xmx500m
+    database:
+      topicDbHost: jdbc:postgresql://topic-db-svc:5432/user-post-db
+      topicDbUserName: topicServiceUser
+
+user-app:
+  namespace:
+    name: ${global.namespace.name}
+  app:
+    javaOpts: -Xms500m -Xmx500m
+    database:
+      userDbHost: jdbc:postgresql://user-db-svc:5432/user-db
+      userDbUserName: userServiceUser
+      userInitDbFile: file:/usr/share/userservice/schema.sql
