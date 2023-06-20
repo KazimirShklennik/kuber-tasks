@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: posts-namespace
+  name: {{ .Release.Name }}-ingress
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName | quote }}
+  rules:
+    - host: {{ .Values.ingress.host | quote }}
+      http:
+        paths:
+          - path: /api/v1/user-service/users
+            pathType: Prefix
+            backend:
+              service:
+                name: posts-user-app
+                port:
+                  number: 8080
+          - path: /api/v1/post-service/posts
+            pathType: Prefix
+            backend:
+              service:
+                name: posts-topic-app
+                port:
+                  number: 8080
